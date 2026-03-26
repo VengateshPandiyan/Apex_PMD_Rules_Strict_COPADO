@@ -1,0 +1,43 @@
+Acceptance Criteria — 7 rows to configure:
+Row 1:
+	• Metric: Security
+	• Priority: All
+	• Violation Frequency: Equals or Less than
+	• Warning: 0
+	• Error Description: Security violations detected. All security issues including SOQL injection, XSS, CRUD violations, insecure endpoints, and sharing model violations must be resolved before commit.
+Row 2:
+	• Metric: Performance
+	• Priority: All
+	• Violation Frequency: Equals or Less than
+	• Warning: 0
+	• Error Description: Performance violation detected. SOQL queries, DML statements, or callouts inside loops will hit governor limits at scale. Bulkify the operation outside the loop.
+Row 3:
+	• Metric: Error Prone
+	• Priority: All
+	• Violation Frequency: Equals or Less than
+	• Warning: 2
+	• Error Description: More than 2 error-prone violations detected. Fix issues including hardcoded IDs, CSRF vulnerabilities, empty catch/if/try blocks, and invalid annotations before commit.
+Row 4:
+	• Metric: Design
+	• Priority: All
+	• Violation Frequency: Equals or Less than
+	• Warning: 4
+	• Error Description: More than 4 design violations detected. Address cyclomatic complexity, excessive class length, deeply nested conditionals, and excessive public method count. Extract helper methods or split classes to reduce complexity.
+Row 5:
+	• Metric: Best Practices
+	• Priority: All
+	• Violation Frequency: Equals or Less than
+	• Warning: 3
+	• Error Description: More than 3 best practice violations detected. Address logic in triggers, missing test assertions, seeAllData usage, and unnecessary global modifiers.
+Row 6:
+	• Metric: Code Style
+	• Priority: All
+	• Violation Frequency: Equals or Less than
+	• Warning: 5
+	• Error Description: More than 5 code style violations detected. Fix missing curly braces on control structures and naming convention violations (camelCase for methods/variables, PascalCase for classes).
+Row 7:
+	• Metric: Documentation
+	• Priority: All
+	• Violation Frequency: Equals or Less than
+	• Warning: 5
+	• Error Description: More than 5 documentation violations detected. Add ApexDoc comments to public and global classes, methods, and properties.
