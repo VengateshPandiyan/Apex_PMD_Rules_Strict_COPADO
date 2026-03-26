@@ -1,0 +1,197 @@
+/*
+ * Part 1 of 3: Security + Performance + Error Prone rules
+ * Run this FIRST in Developer Console → Execute Anonymous
+ */
+
+Map<String, copadoQuality__SCA_Rule__c> rm = new Map<String, copadoQuality__SCA_Rule__c>();
+for (copadoQuality__SCA_Rule__c r : [
+    SELECT Id, copadoQuality__Rule_Name__c, copadoQuality__Priority__c, copadoQuality__Message__c
+    FROM copadoQuality__SCA_Rule__c
+    WHERE copadoQuality__Category__c IN ('security','performance','errorprone')
+]) {
+    rm.put(r.copadoQuality__Rule_Name__c, r);
+}
+
+Map<String, List<String>> cfg = new Map<String, List<String>>();
+
+// SECURITY
+cfg.put('ApexSOQLInjection', new List<String>{'1','SOQL injection risk: Escape or bind variables in dynamic SOQL to prevent unauthorized data access.'});
+cfg.put('ApexXSSFromURLParam', new List<String>{'1','XSS vulnerability: Escape Strings from URL parameters before rendering in Visualforce pages.'});
+cfg.put('ApexXSSFromEscapeFalse', new List<String>{'1','XSS vulnerability: Escape addError strings. Avoid escape=false on Visualforce output components.'});
+cfg.put('ApexCRUDViolation', new List<String>{'1','CRUD/FLS violation: Validate object and field-level permissions before SOQL or DML operations.'});
+cfg.put('ApexOpenRedirect', new List<String>{'2','Open redirect risk: Validate redirect URLs against a known allowlist to prevent phishing.'});
+cfg.put('ApexInsecureEndpoint', new List<String>{'2','Insecure endpoint: Callouts must use HTTPS. HTTP endpoints are not permitted.'});
+cfg.put('ApexSharingViolations', new List<String>{'2','Missing sharing declaration: Classes with DML/SOQL must declare sharing model explicitly.'});
+cfg.put('ApexDangerousMethods', new List<String>{'2','Dangerous method call: Review usage of unsafe Apex methods that may bypass security controls.'});
+cfg.put('ApexBadCrypto', new List<String>{'2','Weak cryptography: Use randomly generated IV and key values. Avoid hardcoded keys.'});
+cfg.put('ApexSuggestUsingNamedCred', new List<String>{'3','Use Named Credentials for authenticated callouts instead of hardcoding endpoints.'});
+
+// PERFORMANCE
+cfg.put('OperationWithLimitsInLoop', new List<String>{'1','Governor limit risk: No SOQL, DML, callouts, or future calls inside loops. Bulkify outside the loop.'});
+
+// ERROR PRONE
+cfg.put('AvoidHardcodingId', new List<String>{'2','Hardcoded ID: IDs differ across orgs. Use Custom Metadata, Custom Settings, or SOQL instead.'});
+cfg.put('AvoidNonExistentAnnotations', new List<String>{'2','Invalid annotation: Non-existent annotations cause compilation errors. Verify against Apex docs.'});
+cfg.put('MethodWithSameNameAsEnclosingClass', new List<String>{'2','Non-constructor method shares class name. Rename to avoid confusion with constructors.'});
+cfg.put('ApexCSRF', new List<String>{'2','CSRF vulnerability: Validate state-changing operations in Visualforce controllers. Avoid DML in getters.'});
+cfg.put('AvoidDirectAccessTriggerMap', new List<String>{'3','Avoid direct Trigger.old/new access. Pass context records to handler methods for testability.'});
+cfg.put('EmptyIfStmt', new List<String>{'3','Empty if statement: Remove empty block or add intended logic.'});
+cfg.put('EmptyCatchBlock', new List<String>{'3','Empty catch block: Silently swallowing exceptions hides errors. Log or handle explicitly.'});
+cfg.put('EmptyWhileStmt', new List<String>{'3','Empty while statement: Remove or add logic to prevent infinite loops and CPU limits.'});
+cfg.put('EmptyTryOrFinallyBlock', new List<String>{'3','Empty try/finally block: Add meaningful logic or remove unnecessary structure.'});
+cfg.put('EmptyStatementBlock', new List<String>{'3','Empty statement block: Remove or add intended implementation to avoid dead code.'});
+
+List<copadoQuality__SCA_Rule__c> toUp = new List<copadoQuality__SCA_Rule__c>();
+for (String n : cfg.keySet()) {
+    if (rm.containsKey(n)) {
+        copadoQuality__SCA_Rule__c r = rm.get(n);
+        r.copadoQuality__Priority__c = cfg.get(n)[0];
+        r.copadoQuality__Message__c = cfg.get(n)[1];
+        toUp.add(r);
+    } else {
+        System.debug(LoggingLevel.WARN, 'NOT FOUND: ' + n);
+    }
+}
+
+if (!toUp.isEmpty()) {
+    update toUp;
+    System.debug('Part 1 SUCCESS: Updated ' + toUp.size() + ' rules (Security + Performance + Error Prone)');
+}
+
+
+//PART 2
+
+/*
+ * Part 2 of 3: Design + Best Practices rules
+ * Run this SECOND in Developer Console → Execute Anonymous
+ */
+
+Map<String, copadoQuality__SCA_Rule__c> rm = new Map<String, copadoQuality__SCA_Rule__c>();
+for (copadoQuality__SCA_Rule__c r : [
+    SELECT Id, copadoQuality__Rule_Name__c, copadoQuality__Priority__c, copadoQuality__Message__c
+    FROM copadoQuality__SCA_Rule__c
+    WHERE copadoQuality__Category__c IN ('design','bestpractices')
+]) {
+    rm.put(r.copadoQuality__Rule_Name__c, r);
+}
+
+Map<String, List<String>> cfg = new Map<String, List<String>>();
+
+// DESIGN
+cfg.put('CyclomaticComplexity', new List<String>{'3','Cyclomatic complexity exceeds threshold: Too many decision paths. Extract helper methods or use polymorphism.'});
+cfg.put('StdCyclomaticComplexity', new List<String>{'3','Standard cyclomatic complexity exceeded: Simplify by reducing branches, nested loops, and switch cases.'});
+cfg.put('AvoidDeeplyNestedIfStmts', new List<String>{'3','Deeply nested if-else: Use early returns, guard clauses, or extract nested logic into separate methods.'});
+cfg.put('ExcessiveClassLength', new List<String>{'3','Class is too long: Break into smaller classes following Single Responsibility Principle.'});
+cfg.put('ExcessivePublicCount', new List<String>{'3','Too many public members: Reduce public API surface. Make internal members private.'});
+cfg.put('ExcessiveParameterList', new List<String>{'3','Too many parameters: Use a wrapper class or parameter object to group related values.'});
+cfg.put('TooManyFields', new List<String>{'3','Too many fields: Split into multiple classes or use inner wrapper classes.'});
+cfg.put('NcssTypeCount', new List<String>{'4','Class NCSS count is high: Too many non-commenting source statements. Refactor into smaller classes.'});
+cfg.put('NcssConstructorCount', new List<String>{'4','Constructor NCSS count is high: Move initialization logic to setup methods or factory patterns.'});
+cfg.put('NcssMethodCount', new List<String>{'4','Method NCSS count is high: Extract logical blocks into well-named helper methods.'});
+
+// BEST PRACTICES
+cfg.put('AvoidLogicInTrigger', new List<String>{'2','Logic in trigger body: Move all logic to a handler class. Triggers should only delegate.'});
+cfg.put('ApexUnitTestClassShouldHaveAsserts', new List<String>{'3','Missing assertions: Every test must include System.assert(), Assert.areEqual(), or Assert.areNotEqual().'});
+cfg.put('ApexUnitTestShouldNotUseSeeAllDataTrue', new List<String>{'3','seeAllData=true detected: Create test data explicitly via @TestSetup. Do not access org data.'});
+cfg.put('AvoidGlobalModifier', new List<String>{'3','Unnecessary global modifier: Use public unless part of a managed package API.'});
+cfg.put('ApexUnitTestClassShouldHaveRunAs', new List<String>{'4','Missing System.runAs(): Use runAs() to test record access under specific user contexts.'});
+cfg.put('DebugsShouldUseLoggingLevel', new List<String>{'4','Missing logging level: Specify LoggingLevel (e.g., DEBUG, ERROR) in System.debug() calls.'});
+
+List<copadoQuality__SCA_Rule__c> toUp = new List<copadoQuality__SCA_Rule__c>();
+for (String n : cfg.keySet()) {
+    if (rm.containsKey(n)) {
+        copadoQuality__SCA_Rule__c r = rm.get(n);
+        r.copadoQuality__Priority__c = cfg.get(n)[0];
+        r.copadoQuality__Message__c = cfg.get(n)[1];
+        toUp.add(r);
+    } else {
+        System.debug(LoggingLevel.WARN, 'NOT FOUND: ' + n);
+    }
+}
+
+if (!toUp.isEmpty()) {
+    update toUp;
+    System.debug('Part 2 SUCCESS: Updated ' + toUp.size() + ' rules (Design + Best Practices)');
+}
+
+
+PART 3
+
+/*
+ * Part 3 of 3: Code Style + Documentation + Verification
+ * Run this LAST in Developer Console → Execute Anonymous
+ */
+
+Map<String, copadoQuality__SCA_Rule__c> rm = new Map<String, copadoQuality__SCA_Rule__c>();
+for (copadoQuality__SCA_Rule__c r : [
+    SELECT Id, copadoQuality__Rule_Name__c, copadoQuality__Priority__c, copadoQuality__Message__c
+    FROM copadoQuality__SCA_Rule__c
+    WHERE copadoQuality__Category__c IN ('codestyle','documentation')
+]) {
+    rm.put(r.copadoQuality__Rule_Name__c, r);
+}
+
+Map<String, List<String>> cfg = new Map<String, List<String>>();
+
+// CODE STYLE
+cfg.put('ForLoopsMustUseBraces', new List<String>{'4','For loop missing braces: Always use curly braces to prevent scope issues.'});
+cfg.put('IfElseStmtsMustUseBraces', new List<String>{'4','If-else missing braces: Always use braces to prevent logic errors during future changes.'});
+cfg.put('WhileLoopsMustUseBraces', new List<String>{'4','While loop missing braces: Always use curly braces to prevent scope issues.'});
+cfg.put('IfStmtsMustUseBraces', new List<String>{'4','If statement missing braces: Always use braces even for single-line bodies.'});
+cfg.put('MethodNamingConventions', new List<String>{'4','Method names must start lowercase and follow camelCase (e.g., calculateTotal).'});
+cfg.put('ClassNamingConventions', new List<String>{'4','Class names must start uppercase and follow PascalCase (e.g., AccountService).'});
+cfg.put('OneDeclarationPerLine', new List<String>{'4','Multiple declarations per line: Declare one variable per line for readability.'});
+cfg.put('FieldNamingConventions', new List<String>{'4','Field naming: Use camelCase for instance fields, UPPER_SNAKE_CASE for constants.'});
+cfg.put('FormalParameterNamingConventions', new List<String>{'4','Parameter naming: Method parameters must follow camelCase (e.g., accountId).'});
+cfg.put('LocalVariableNamingConventions', new List<String>{'4','Variable naming: Local variables must follow camelCase (e.g., totalAmount).'});
+cfg.put('PropertyNamingConventions', new List<String>{'4','Property naming: Apex properties must follow camelCase (e.g., accountName).'});
+
+// DOCUMENTATION
+cfg.put('ApexDoc', new List<String>{'4','Missing ApexDoc: Add /** */ comments to public/global classes, methods, and properties.'});
+
+List<copadoQuality__SCA_Rule__c> toUp = new List<copadoQuality__SCA_Rule__c>();
+for (String n : cfg.keySet()) {
+    if (rm.containsKey(n)) {
+        copadoQuality__SCA_Rule__c r = rm.get(n);
+        r.copadoQuality__Priority__c = cfg.get(n)[0];
+        r.copadoQuality__Message__c = cfg.get(n)[1];
+        toUp.add(r);
+    } else {
+        System.debug(LoggingLevel.WARN, 'NOT FOUND: ' + n);
+    }
+}
+
+if (!toUp.isEmpty()) {
+    update toUp;
+    System.debug('Part 3 SUCCESS: Updated ' + toUp.size() + ' rules (Code Style + Documentation)');
+}
+
+// ============================================================
+// VERIFICATION — Priority distribution across ALL rules
+// ============================================================
+System.debug('');
+System.debug('=== FINAL VERIFICATION ===');
+Map<String, Integer> pc = new Map<String, Integer>{'1'=>0,'2'=>0,'3'=>0,'4'=>0,'5'=>0};
+Map<String, List<String>> catRules = new Map<String, List<String>>();
+
+for (copadoQuality__SCA_Rule__c r : [
+    SELECT copadoQuality__Category__c, copadoQuality__Rule_Name__c, copadoQuality__Priority__c
+    FROM copadoQuality__SCA_Rule__c ORDER BY copadoQuality__Category__c, copadoQuality__Priority__c
+]) {
+    String p = r.copadoQuality__Priority__c;
+    if (p != null && pc.containsKey(p)) pc.put(p, pc.get(p) + 1);
+    String key = r.copadoQuality__Category__c + ' | P' + p;
+    if (!catRules.containsKey(key)) catRules.put(key, new List<String>());
+    catRules.get(key).add(r.copadoQuality__Rule_Name__c);
+}
+
+System.debug('P1 (High):        ' + pc.get('1'));
+System.debug('P2 (Medium High): ' + pc.get('2'));
+System.debug('P3 (Medium):      ' + pc.get('3'));
+System.debug('P4 (Medium Low):  ' + pc.get('4'));
+System.debug('P5 (Low):         ' + pc.get('5'));
+System.debug('');
+
+for (String key : catRules.keySet()) {
+    System.debug(key + ' → ' + String.join(catRules.get(key), ', '));
+}
