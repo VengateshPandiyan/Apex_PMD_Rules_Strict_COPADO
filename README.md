@@ -1,0 +1,1 @@
+# Apex_PMD_Rules_Strict_COPADO
